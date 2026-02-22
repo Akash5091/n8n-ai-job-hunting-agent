@@ -1,0 +1,144 @@
+{
+  "name": "n8n AI Job Hunting Agent",
+  "description": "Claude Anthropic Powered Full Stack n8n AI Job Hunting Agent - Automated job matching, resume tailoring, and recruiter outreach with ATS scoring optimization",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "return items;"
+      },
+      "name": "Code - Parse Job Posting",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "model": "claude-3-opus-20240229",
+        "systemPrompt": "You are an expert job market analyst and resume optimizer.",
+        "prompt": "=Analyze this job posting and extract key requirements"
+      },
+      "name": "Claude - Job Analysis",
+      "type": "n8n-nodes-base.anthropic",
+      "typeVersion": 1,
+      "position": [750, 300]
+    },
+    {
+      "parameters": {
+        "mode": "append",
+        "sourceData": "autoMapInputData",
+        "googleSheetOptions": {}
+      },
+      "name": "Google Sheets - Log Results",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [1000, 300]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "text": "Job analysis complete: {{$json.job_title}}"
+      },
+      "name": "Slack - Notification",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "=\"{{$env.NOTIFICATION_EMAIL}}\"",
+        "subject": "Job Matching Report",
+        "textOnly": false,
+        "htmlEmail": "<h2>Job Analysis Report</h2>{{$json.analysis}}"
+      },
+      "name": "Gmail - Send Report",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [1500, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code - Parse Job Posting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Parse Job Posting": {
+      "main": [
+        [
+          {
+            "node": "Claude - Job Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude - Job Analysis": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Log Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Log Results": {
+      "main": [
+        [
+          {
+            "node": "Slack - Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack - Notification": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Send Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "any"
+  },
+  "tags": [
+    {
+      "id": "1",
+      "name": "Job Hunting"
+    },
+    {
+      "id": "2",
+      "name": "AI"
+    },
+    {
+      "id": "3",
+      "name": "Automation"
+    }
+  ]
+}
